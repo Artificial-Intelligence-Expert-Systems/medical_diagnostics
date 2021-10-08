@@ -1,27 +1,31 @@
 import psycopg2
 
 
-def decorated_connect(decorate_function):
-    def connect(*args):
-        connection = psycopg2.connect(
-                            host = "34.82.155.34",
-                            database = "aies",
-                            user = "lab1",
-                            password = "lab1")
+class database:
+    def __init__(self):
+        self.connection = psycopg2.connect(
+            host="34.82.155.34",
+            database="aies",
+            user="lab1",
+            password="lab1"
+        )
 
-        cur = connection.cursor()
-        decorate_function(cur, *args)
-        connection.commit()
-        cur.close()
-        connection.close()
-    return connect
+    def decorated_connect(self, decorated_function):
+        def connect(*args):
+            cur = self.connection.cursor()
 
+            decorated_function(cur, *args)
 
-@decorated_connect
-def add_custom_models(cur, *args):
-    print((args[0]), type(args[0]))
-    cur.execute("call public.add_new_disease('{0}')".format(args[0]))
+            self.connection.commit()
+            cur.close()
+        return connect
 
-add_custom_models('Мигрень')
+    def close(self):
+        self.connection.close()
 
-
+# @decorated_connect
+# def add_custom_models(cur, *args):
+#     print((args[0]), type(args[0]))
+#     cur.execute("call public.add_new_disease('{0}')".format(args[0]))
+#
+# add_custom_models('Мигрень')
